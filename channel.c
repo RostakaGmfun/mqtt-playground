@@ -9,14 +9,12 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-int channel_open(struct channel *chan, const char *host, uint16_t port)
+int channel_init(struct channel *chan)
 {
 
-    struct sockaddr_in addr;
     int sockfd = 0;
-    struct timeval tv;
 
-    if (!chan || !host) {
+    if (!chan) {
         return 1;
     }
 
@@ -25,6 +23,20 @@ int channel_open(struct channel *chan, const char *host, uint16_t port)
     if (sockfd < 0) {
         return 1;
     }
+
+    chan->sockfd = sockfd;
+
+    return 0;
+}
+
+int channel_conect(struct channel *chan, const char *host, uint16_t port)
+{
+    if (!chan || !host || !port) {
+        return 1;
+    }
+
+    struct timeval tv;
+    struct sockaddr_in addr;
 
     struct hostent *host_addr = gethostbyname(host);
     if (!host_addr) {
@@ -36,11 +48,9 @@ int channel_open(struct channel *chan, const char *host, uint16_t port)
     addr.sin_port = htons(port);
     memcpy(&addr.sin_addr, host_addr->h_addr_list[0], host_addr->h_length);
 
-    if (connect(sockfd, (const struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    if (connect(chan->sockfd, (const struct sockaddr*)&addr, sizeof(addr)) < 0) {
         return 1;
     }
-
-    chan->sockfd = sockfd;
 
     tv.tv_sec = 1;
     tv.tv_usec = 0;
@@ -52,9 +62,9 @@ int channel_open(struct channel *chan, const char *host, uint16_t port)
     return 0;
 }
 
-void channel_close(struct channel *chan)
+void channel_shutdown(struct channel *chan)
 {
-    if(chan) {
+    if (chan) {
         close(chan->sockfd);
     }
 }

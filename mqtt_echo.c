@@ -7,8 +7,7 @@
 #include <stdio.h>
 
 #include "channel.h"
-
-#include <MQTTPacket.h>
+#include "mqtt.h"
 
 static int exit_flag = 0;
 
@@ -19,39 +18,6 @@ static const size_t PACKET_BUFFER_LEN = 256;
 void sigint_handler(int sig)
 {
     exit_flag = 1;
-}
-
-static int mqtt_connect(struct channel *chan, uint8_t *buf, size_t buf_len)
-{
-    MQTTPacket_connectData connect_data = MQTTPacket_connectData_initializer;
-    size_t packet_len = 0;
-
-    MQTTTransport *mqtt_transport;
-
-    packet_len = MQTTSerialize_connect(buf, buf_len, &connect_data);
-
-    if (!packet_len) {
-        return 1;
-    }
-
-    if (channel_write(chan, buf, packet_len) != packet_len) {
-        return 1;
-    }
-
-    if (MQTTPacket_readnb(buf, buf_len, chan->data) != CONNACK) {
-        uint8_t connack_rc = 0;
-        if (MQTTDeserialize_connack(NULL, &connack_rc, buf, buf_len) != 1 || connack_rc != 0) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-static int mqtt_subscribe(struct channel *chan, const char *topic_name,
-        uint8_t *buf, size_t buf_len)
-{
-
 }
 
 int main()
