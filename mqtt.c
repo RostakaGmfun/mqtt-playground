@@ -41,6 +41,8 @@ struct mqtt_context *mqtt_init(int qos, const char *client_id, void *user_data)
         free(context);
         return NULL;
     }
+    context->mqtt_transport.sck = &context->channel;
+    context->mqtt_transport.getfn = channel_getdata;
 
     return context;
 }
@@ -78,7 +80,22 @@ int mqtt_connect(struct mqtt_context *context, const char *host, uint16_t port)
         return 1;
     }
 
-    return 0;
+    // TODO: timeout
+    while (1) {
+        if (MQTTPacket_readnb(context->packet_buffer, MQTT_PACKET_BUFFER_SIZE,
+                    &context->mqtt_transport ) == CONNACK) {
+
+            unsigned char sessionPresent, connack_rc;
+
+            int ret = MQTTDeserialize_connack(&sessionPresent, &connack_rc,
+                    context->packet_buffer, MQTT_PACKET_BUFFER_SIZE);
+            if (ret!= 1 || connack_rc != 0) {
+                // TODO: handle connack_rc
+                return 1;
+            }
+            return 0;
+        }
+    }
 }
 
 void mqtt_set_notification_handler(struct mqtt_context *context, notify_callback handler)

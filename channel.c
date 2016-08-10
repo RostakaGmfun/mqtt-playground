@@ -90,7 +90,7 @@ size_t channel_read(struct channel *chan, void *buffer, size_t size)
     return ret;
 }
 
-int channel_getdata(void *sck, unsigned char *buffer, int size)
+int channel_getdata(void *sck, uint8_t *buffer, int size)
 {
     struct channel *chan = sck;
 
@@ -99,4 +99,6 @@ int channel_getdata(void *sck, unsigned char *buffer, int size)
         //connection has been closed or error occured
         return -1;
     }
+
+    return ret;
 }

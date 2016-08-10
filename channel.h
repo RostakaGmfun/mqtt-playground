@@ -19,4 +19,6 @@ size_t channel_write(struct channel *chan, const void *buffer, size_t size);
 
 size_t channel_read(struct channel *chan, void *buffer, size_t size);
 
+int channel_getdata(void *sck, uint8_t *buffer, int size);
+
 #endif // CHANNEL_H
