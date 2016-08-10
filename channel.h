@@ -13,7 +13,7 @@ int channel_init(struct channel *chan);
 
 int channel_connect(struct channel *chan, const char *host, uint16_t port);
 
-void channel_shutdown(struct channel *chan);
+void channel_destroy(struct channel *chan);
 
 size_t channel_write(struct channel *chan, const void *buffer, size_t size);
 

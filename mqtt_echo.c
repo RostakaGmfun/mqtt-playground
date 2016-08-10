@@ -20,40 +20,45 @@ void sigint_handler(int sig)
     exit_flag = 1;
 }
 
+static int on_notify(struct mqtt_context *context, const char *topic,
+        uint8_t *message, size_t message_length)
+{
+    // TODO
+    return 0;
+}
+
 int main()
 {
     signal(SIGINT, sigint_handler);
 
-    struct channel chan = { 0 };
-    uint8_t packet_buffer[PACKET_BUFFER_LEN];
-    MQTTTransport transport_interface;
-
-    if (channel_open(&chan, MQTT_HOST, MQTT_PORT) != 0) {
-        fprintf(stderr, "Failed to open TCP connection to MQTT broker\n");
-        return EXIT_FAILURE;
+    struct mqtt_context *mqtt_context = mqtt_init(0, "client", NULL);
+    if (!mqtt_context) {
+        fprintf(stderr, "Failed to initialize MQTT context\n");
+        goto error;
     }
 
-    transport_interface.sck = &chan;
-    transport_interface.getfn = (int (*)(void *, unsigned char *, int))channel_read;
-    chan.data = &transport_interface;
-
-    if (mqtt_connect(&chan, packet_buffer, PACKET_BUFFER_LEN) != 0) {
+    if (mqtt_connect(mqtt_context, MQTT_HOST, MQTT_PORT) != 0) {
         fprintf(stderr, "Failed to connect to MQTT broker\n");
-        return EXIT_FAILURE;
+        goto error;
     }
 
-    printf("Successfully connected to %s:%d\n", MQTT_HOST, MQTT_PORT);
+    printf("Successfully connected to MQTT broker\n");
 
-    if (mqtt_subscribe(&chan, "a", packet_buffer, PACKET_BUFFER_LEN) != 0) {
-        fprintf(stderr, "Failed to subscribe to topic 'a'\n");
-        return EXIT_FAILURE;
+    mqtt_set_notification_handler(mqtt_context, on_notify);
+
+    if (mqtt_subscribe(mqtt_context, "a") != 0) {
+        fprintf(stderr, "Failed to subcribe to topic 'a'\n");
+        goto error;
     }
 
-    while (exit_flag == 0) {
-        // TODO
-    }
+    printf("Successfully subscribed to topic 'a'\n");
 
-    channel_close(&chan);
+    mqtt_loop(mqtt_context);
 
     return EXIT_SUCCESS;
+
+error:
+    mqtt_destroy(mqtt_context);
+    return EXIT_FAILURE;
+
 }

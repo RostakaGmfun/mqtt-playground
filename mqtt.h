@@ -8,13 +8,16 @@
 
 struct mqtt_context;
 
-typedef int (*notify_callback)(struct mqtt_context *cotnext, const char *topic);
+typedef int (*notify_callback)(struct mqtt_context *context, const char *topic,
+        uint8_t *message, size_t message_length);
 
-struct mqtt_context *mqtt_init(int qos, void *user_data);
+struct mqtt_context *mqtt_init(int qos, const char *client_id, void *user_data);
 
-void mqtt_destroy(struct mqtt_context *cotnext);
+void mqtt_destroy(struct mqtt_context *context);
 
 int mqtt_connect(struct mqtt_context *context, const char *host, uint16_t port);
+
+void mqtt_set_notification_handler(struct mqtt_context *context, notify_callback handler);
 
 int mqtt_subscribe(struct mqtt_context *context, const char *topic_name);
 

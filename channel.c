@@ -29,7 +29,7 @@ int channel_init(struct channel *chan)
     return 0;
 }
 
-int channel_conect(struct channel *chan, const char *host, uint16_t port)
+int channel_connect(struct channel *chan, const char *host, uint16_t port)
 {
     if (!chan || !host || !port) {
         return 1;
@@ -62,7 +62,7 @@ int channel_conect(struct channel *chan, const char *host, uint16_t port)
     return 0;
 }
 
-void channel_shutdown(struct channel *chan)
+void channel_destroy(struct channel *chan)
 {
     if (chan) {
         close(chan->sockfd);
