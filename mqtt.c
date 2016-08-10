@@ -8,11 +8,11 @@
 struct mqtt_context {
     struct channel channel;
     MQTTTransport mqtt_transport;
-    int qos;
     uint8_t packet_buffer[MQTT_PACKET_BUFFER_SIZE];
     void *user_data;
     char *client_id;
     notify_callback on_notify;
+    int exit_flag;
 };
 
 struct mqtt_context *mqtt_init(int qos, const char *client_id, void *user_data)
@@ -83,7 +83,7 @@ int mqtt_connect(struct mqtt_context *context, const char *host, uint16_t port)
     // TODO: timeout
     while (1) {
         if (MQTTPacket_readnb(context->packet_buffer, MQTT_PACKET_BUFFER_SIZE,
-                    &context->mqtt_transport ) == CONNACK) {
+                    &context->mqtt_transport) == CONNACK) {
 
             unsigned char sessionPresent, connack_rc;
 
@@ -120,5 +120,24 @@ void mqtt_loop(struct mqtt_context *context)
         return;
     }
 
-    // TODO
+    while (!context->exit_flag) {
+        int packet_type = 0;
+        while ((packet_type = MQTTPacket_readnb(context->packet_buffer, MQTT_PACKET_BUFFER_SIZE,
+                &context->mqtt_transport) == 0));
+        if (packet_type < 0) {
+            // TODO: error handling
+        }
+
+        switch (packet_type) {
+            // TODO
+        }
+    }
+
+}
+
+void mqtt_exit_loop(struct mqtt_context *context)
+{
+    if (context) {
+        context->exit_flag = 1;
+    }
 }

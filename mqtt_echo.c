@@ -15,23 +15,22 @@ static const char *MQTT_HOST = "localhost";
 static const uint16_t MQTT_PORT = 1883;
 static const size_t PACKET_BUFFER_LEN = 256;
 
-void sigint_handler(int sig)
-{
-    exit_flag = 1;
-}
-
 static int on_notify(struct mqtt_context *context, const char *topic,
         uint8_t *message, size_t message_length)
 {
-    // TODO
+    printf("Received message on topic 'a'\n");
+
+    if (mqtt_publish(context, "b", message, message_length) != 0) {
+        fprintf(stderr, "Failed to publish message to topic 'b'\n");
+        return 1;
+    }
+
     return 0;
 }
 
 int main()
 {
-    signal(SIGINT, sigint_handler);
-
-    struct mqtt_context *mqtt_context = mqtt_init(0, "client", NULL);
+    struct mqtt_context *mqtt_context = mqtt_init("client", NULL);
     if (!mqtt_context) {
         fprintf(stderr, "Failed to initialize MQTT context\n");
         goto error;
