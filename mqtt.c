@@ -15,20 +15,13 @@ struct mqtt_context {
     int exit_flag;
 };
 
-struct mqtt_context *mqtt_init(int qos, const char *client_id, void *user_data)
+struct mqtt_context *mqtt_init(const char *client_id, void *user_data)
 {
     struct mqtt_context *context = malloc(sizeof(struct mqtt_context));
     if (!context) {
         return NULL;
     }
 
-    // Only QoS 0 is currently supported
-    if (qos > 0) {
-        free(context);
-        // TODO: add error codes
-        return NULL;
-    }
-    context->qos = qos;
     context->user_data = user_data;
     context->client_id = malloc(strlen(client_id)+1);
     if (!context->client_id) {
@@ -111,6 +104,12 @@ int mqtt_subscribe(struct mqtt_context *context, const char *topic_name)
         return 1;
     }
     // TODO
+    return 0;
+}
+
+int mqtt_publish(struct mqtt_context *context, const char *topic_name,
+        uint8_t *message, size_t mesasge_length, int qos)
+{
     return 0;
 }
 
