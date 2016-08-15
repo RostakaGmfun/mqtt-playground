@@ -49,6 +49,12 @@ int main()
 
     printf("Successfully subscribed to topic 'a'\n");
 
+    const uint8_t message[] = "Hello, MQTT!";
+    if (mqtt_publish(mqtt_context, "a", message, sizeof(message)+1, 0)) {
+        fprintf(stderr, "Failed to publish message\n");
+        goto error;
+    }
+
     mqtt_loop(mqtt_context);
 
     return EXIT_SUCCESS;

@@ -108,8 +108,36 @@ int mqtt_subscribe(struct mqtt_context *context, const char *topic_name)
 }
 
 int mqtt_publish(struct mqtt_context *context, const char *topic_name,
-        uint8_t *message, size_t mesasge_length, int qos)
+        uint8_t *message, size_t message_length, int qos)
 {
+    if (!context || !topic_name || !message || !message_length) {
+        return 1;
+    }
+
+    // TODO: add support for QoS 1 and 2
+    if (qos != 0) {
+        return 1;
+    }
+
+    MQTTString tname = MQTTString_initializer;
+    // WTF why is it non-const??
+    tname.cstring = (char *)topic_name;
+
+    int len = MQTTSerialize_publish(context->packet_buffer, MQTT_PACKET_BUFFER_SIZE,
+            0, /* DUP */
+            qos,
+            0, /* Retain */
+            0, /* Packet id */
+            tname, message, message_length);
+
+    if (len <= 0) {
+        return 1;
+    }
+
+    if (channel_write(&context->channel, context->packet_buffer, len) != len) {
+        return 1;
+    }
+
     return 0;
 }
 
